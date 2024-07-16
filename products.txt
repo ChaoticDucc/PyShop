@@ -1,0 +1,7 @@
+apple, 0.8, fruit
+banana, 0.7, fruit
+pretzel, 0.8, snack
+muffin, 2.0, snack
+chips, 1.5, snack
+cola, 2.7, drink
+orange juice, 2.5, drink

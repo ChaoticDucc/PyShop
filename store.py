@@ -4,6 +4,10 @@ import time
 products_file = "products.txt"
 users_file = "users.txt"
 
+banner = '''---------------------------------
+Welcome to the School Store!
+---------------------------------'''
+
 class Operation:
 
     # Sets a blank line 100 times
@@ -11,13 +15,14 @@ class Operation:
         for loop in range(0, 100):
             print("")
 
-    def Pause(pause_for):
+    def Pause(pause_for = 0):
         if pause_for == 0:
             input("Press enter to continue")
         else:
             print(f"Wait {pause_for} seconds")
             time.sleep(pause_for)
 
+    # TypeCheck is used because it can verify if a given string can be converted to another type. 
     def TypeCheck (input_value, check_for_type): 
         # Checks if integer check has been requested.
         if check_for_type == "int":
@@ -43,40 +48,59 @@ class Products:
 
     number_of_products = 0
     product_id_dict = {}
+    product_name_dict = {}
     product_categories_dict = {}
 
     def ReadFile():
+        print (f"Adding products from '{products_file}'")
+        print("")
         with open(products_file) as file:
             file_content = file.readlines()
         for content in file_content:
-            content = content.strip()
-            content = content.split(", ")
-            Products(content[0],content[1],content[2])
+            content_line = content.strip()
+            content_items = content_line.split(", ")
+            try:
+                Products(content_items[0],content_items[1],content_items[2])
+            except IndexError:
+                print(f"⚠ FAILURE: '{content_items[0]}' failed. Missing arguments. Currently: '{content_line}'.")
+            print("")
 
     def __init__(self, name, price, category) -> None:
-        if Operation.TypeCheck(price, "float") == False:
-            print(f"{products_file} > {name}: Failed to add as product. Price '{price}' is not a number. Skipping...")
-            return
-        self.name = name
-        self.price = float(price)
-        self.category = category
-        if float(price) < 0:
-            print(f"{products_file} > {name}: Negative price '{price}' detected. Is this correct? Continuing...")
-        # Tracks the number of products added
-        Products.number_of_products += 1
-        # Uses number_of_products to assign an ID (self.id) to instance.
-        self.id = int(Products.number_of_products)
-        # Adds ID (self.id) as key and instance (self) as value to product dictionary (product_id_dict).
-        Products.product_id_dict[self.id] = self
-        # Adds category (self.category) as key and instance (self) as value to product dictionary (product_categories_dict).
-        # Checks if self.category is in product_categories_dict.
-        if self.category in Products.product_categories_dict:
-            # Adds the instance (self) to the list associated with the existing key (self.category).
-            Products.product_categories_dict[self.category].append(self)
+        ## TESTS
+        # checks if product name has already been added
+        if name in Products.product_name_dict:
+            existing = Products.product_name_dict[name]
+            print(f"⚠ FAILURE: '{name}' failed. '{existing.name}' already exists with price '{existing.price}' in category '{existing.category}'.")
+        # checks if price is float
+        elif Operation.TypeCheck(price, "float") == False:
+            print(f"⚠ FAILURE: '{name}' failed. Price is not a number. Currently: '{price}'")
+        ## IF TESTS PASSED
         else:
-            # Creates new key (self.category) and a list as its value, containing the instance (self).
-            Products.product_categories_dict[self.category] = [self]
-        print(f"{products_file} > {name}: Added as product '{self.name}', with price '{self.price}' in category '{self.category}'")
+            ## INSTANCE VARIABLES
+            self.name = name
+            self.price = float(price)
+            self.category = category
+            # Tracks the number of products added
+            Products.number_of_products += 1
+            # Uses number_of_products to assign an ID (self.id) to instance.
+            self.id = int(Products.number_of_products)
+            ## DICTIONARIES
+            # Adds ID (self.id) as key and instance (self) as value to product id dictionary (product_id_dict).
+            Products.product_id_dict[self.id] = self
+            # Adds name (self.name) as key and instance (self) as value to name dictionary (product_name_dict).
+            Products.product_name_dict[self.name] = self
+            # Adds category (self.category) as key and instance (self) as value to category dictionary (product_categories_dict).
+            # - Checks if self.category is in product_categories_dict.
+            if self.category in Products.product_categories_dict:
+                # Adds the instance (self) to the list associated with the existing key (self.category).
+                Products.product_categories_dict[self.category].append(self)
+            else:
+                # Creates new key (self.category) and a list as its value, containing the instance (self).
+                Products.product_categories_dict[self.category] = [self]
+            print(f"SUCCESS: '{self.name}' added with price '{self.price}' in category '{self.category}'.")
+            # Asks user if price should be negative
+            if float(price) < 0:
+                print(f"🛈 Price is negative. Is this correct?")
 
     # Displays a list of all products.
     def DisplayFullList(): 
@@ -86,34 +110,56 @@ class Products:
             print(category.capitalize())
             print("")
             for item in Products.product_categories_dict[category]:
-                print(f"[{item.id}] {item.name.capitalize()}")
+                print(f"[{item.id}] {item.name}")
                 print(f"${item.price:.2f}")
                 print("")
 
 
 class User:
 
+    available_permission_levels = ("user","admin")
     user_dict = {}
     logged_in_user = None
 
     def ReadFile():
-        with open("users.txt") as file:
+        print (f"Adding users from '{users_file}'")
+        print("")
+        with open(users_file) as file:
             file_content = file.readlines()
         for content in file_content:
-            content = content.strip()
-            User(content)
+            content_line = content.strip()
+            content_items = content_line.split(", ")
+            try:
+                User(content_items[0], content_items[1])
+            except IndexError:
+                print(f"⚠ FAILURE: '{content_items[0]}' failed. Missing arguments. Currently: '{content_line}'.")
+            print("")
 
-    def __init__(self, name) -> None:
+    def __init__(self, name, permission_level) -> None:
+        # Checks if entered name is lowercase. Makes it so if not. 
         if name.islower() == False:
-            print(f"{products_file} > {name}: Uppercase name '{name}' detected. Changing to lowercase... Continuing...")
-        self.name = name.lower()
-        # Adds name (self.name) as key and instance (self) as value to user dictionary (user_dict).
-        User.user_dict[self.name] = self
-        self.cart = {}
-        self.cart_total = 0
-        print(f"{products_file} > {name}: Added as user '{self.name}'.")
-
+            print(f"🛈 Changed '{name}' to '{name.lower()}'.")
+            name = name.lower()
+        ## TESTS
+        # checks if user name has already been added
+        if name in User.user_dict: 
+            existing = User.user_dict[name]
+            print(f"⚠ FAILURE: '{name}' failed. '{existing.name}' already exists with permission level '{existing.permission_level}'.")
+        # check if given permissions level matches available levels
+        elif permission_level not in User.available_permission_levels: 
+            print(f"⚠ FAILURE: '{name}' failed. Admin rights must be one of the following: {User.available_permission_levels}. Currently: '{permission_level}'")
+        ## IF TESTS PASSED
+        else:
+            self.name = name.lower()
+            self.permission_level = permission_level
+            # Adds name (self.name) as key and instance (self) as value to user dictionary (user_dict).
+            User.user_dict[self.name] = self
+            self.cart = {}
+            self.cart_total = 0
+            print(f"SUCCESS: '{self.name}' added with  permission level '{self.permission_level}'.")
+            
     def Login():
+        Operation.ClearTerminal()
         while True:
             user_to_login = input("Enter username: ")
             if user_to_login not in User.user_dict:
@@ -129,6 +175,7 @@ class Purchasing(User):
     
     # Receives and validates the input. 
     def Menu(user): 
+        print(banner)
         Products.DisplayFullList()
         print("Select your product(s) by entering the ID (eg: 1).")
         print("Use 0 to finish.")
@@ -139,6 +186,8 @@ class Purchasing(User):
             if user_input == "0":
                 print("Displaying Cart")
                 Purchasing.DisplayCart(user)
+                break
+            elif user_input == "exit" and user.permission_level == "admin":
                 break
             else:
                 Purchasing.ProductSelection(user, user_input)
@@ -201,16 +250,20 @@ class Purchasing(User):
                 print(f"                $ {(item.price*item_quantity):.2f}")
             print("_____________________")
             print(f"Total: $ {user.cart_total:.2f}")
-        Operation.Pause(0)
+        Operation.Pause()
+        user.cart = {}
+        user.cart_total = 0
+        Navigator()
+
+def Navigator():
+    User.Login()
+    Purchasing.Menu(User.logged_in_user)
+
+def StartUp():
+    Products.ReadFile()
+    User.ReadFile()
+    Operation.Pause()
 
 # Operating Code
-
-Products.ReadFile()
-User.ReadFile()
-Operation.ClearTerminal()
-User.Login()
-print(f'''
----------------------------------
-Welcome to the School Store!
----------------------------------''')
-Purchasing.Menu(User.logged_in_user)
+StartUp()
+Navigator()

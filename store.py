@@ -30,7 +30,7 @@ class Operation:
             try:
                 input_value=int(input_value)
                 return(True)
-            except:
+            except ValueError:
                 return(False)
     	# Checks if integer check has been requested.
         elif check_for_type == "float":
@@ -38,7 +38,7 @@ class Operation:
             try:
                 input_value=float(input_value)
                 return(True)
-            except:
+            except ValueError:
                 return(False)
         else:
             raise TypeError("Invalid/unsupported type")
@@ -54,18 +54,24 @@ class Products:
     def ReadFile():
         print (f"Adding products from '{products_file}'")
         print("")
+        # opens defined products_file
         with open(products_file) as file:
+            # adds each line of content as an item in list file_content
             file_content = file.readlines()
         for content in file_content:
+            # removes any formatting information, such as new line (n/), and assigns it to content_line
             content_line = content.strip()
+            # splits the content into list content_items
             content_items = content_line.split(", ")
             try:
+                # attempts to input each list value to the init function. 
                 Products(content_items[0],content_items[1],content_items[2])
             except IndexError:
+                # if there are not enough values in the list to input, outputs this
                 print(f"⚠ FAILURE: '{content_items[0]}' failed. Missing arguments. Currently: '{content_line}'.")
             print("")
 
-    def __init__(self, name, price, category) -> None:
+    def __init__(self, name, category, price) -> None:
         ## TESTS
         # checks if product name has already been added
         if name in Products.product_name_dict:
@@ -124,23 +130,27 @@ class User:
     def ReadFile():
         print (f"Adding users from '{users_file}'")
         print("")
+        # opens defined users_file
         with open(users_file) as file:
             file_content = file.readlines()
         for content in file_content:
             content_line = content.strip()
+            # splits the content into list content_items
             content_items = content_line.split(", ")
             try:
+                # attempts to input each list value to the init function. 
                 User(content_items[0], content_items[1])
             except IndexError:
+                # if there are not enough values in the list to input, outputs this
                 print(f"⚠ FAILURE: '{content_items[0]}' failed. Missing arguments. Currently: '{content_line}'.")
             print("")
 
     def __init__(self, name, permission_level) -> None:
+        ## TESTS
         # Checks if entered name is lowercase. Makes it so if not. 
         if name.islower() == False:
             print(f"🛈 Changed '{name}' to '{name.lower()}'.")
             name = name.lower()
-        ## TESTS
         # checks if user name has already been added
         if name in User.user_dict: 
             existing = User.user_dict[name]
@@ -156,7 +166,7 @@ class User:
             User.user_dict[self.name] = self
             self.cart = {}
             self.cart_total = 0
-            print(f"SUCCESS: '{self.name}' added with  permission level '{self.permission_level}'.")
+            print(f"SUCCESS: '{self.name}' added with permission level '{self.permission_level}'.")
             
     def Login():
         Operation.ClearTerminal()

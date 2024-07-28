@@ -1,8 +1,8 @@
-apple, 0.8, fruit
-banana, 0.7, fruit
-apple, 0.8, fruit
+apple, fruit, 0.8
+banana, fruit, 0.7
+apple, fruit, 0.8
 pretzel, -0.8
-muffin, 2.0, backed
-chips, e, snack
-cola, 2.7, drink
-orange juice, 2.5, drink
+muffin, backed, 2.0
+chips, snack, e
+cola, drink, 2.7
+orange juice, drink, 2.5
